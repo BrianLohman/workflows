@@ -1,6 +1,6 @@
 #!/usr/bin/env nextflow
 
-#TODO: set up channel to handle the spilt half procedure
+//TODO: set up channel to handle the spilt half procedure
 
 /* generated weighted score, 
  * assign group membership based on score, 
