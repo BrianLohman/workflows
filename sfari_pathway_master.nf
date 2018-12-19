@@ -25,6 +25,7 @@ process extract {
 process vep {
   module 'ucgd'
   module 'vep/91.3'
+  cpus 24
 
   input:
     file pathway_vcf from pathway_vcf_files
@@ -59,6 +60,7 @@ process sort {
 // gnomAD annotation with vcfanno
 process gnomad {
   module 'vcfanno/0.2.4'
+  cpus 2
  
   input:
     file pathway_vep_sorted_vcf from pathway_vep_sorted_vcf_files
@@ -69,7 +71,7 @@ process gnomad {
  
   script:
     """
-    vcfanno /scratch/ucgd/lustre/work/u0806040/data/gnomAD_hg37.conf  $pathway_vep_sorted_vcf > ${pathway_vep_sorted_vcf}_gnomad.vcf
+    vcfanno /scratch/ucgd/lustre/work/u0806040/data/gnomAD_hg37.conf $pathway_vep_sorted_vcf > ${pathway_vep_sorted_vcf}_gnomad.vcf
     """
 }
  
@@ -77,7 +79,8 @@ process gnomad {
 process generate_counts {
   module 'htslib/1.7'
   publishDir "$baseDir/", mode = "copy"
- 
+  cpus 3
+
   input:
     file pathway_vep_sorted_gnomad_vcf from pathway_vep_sorted_gnomad_vcf_files 
     file("/scratch/ucgd/lustre/work/u0806040/data/sfari_gene_score_dict.txt")
