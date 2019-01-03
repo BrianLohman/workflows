@@ -8,7 +8,7 @@ Channel.fromPath('*.bed').set{ bed_files }
 // extract from original bcf
 process extract {
   module 'bcftools/1.7'
-
+  cpus 1
   input:
     file bed from bed_files
 
@@ -25,7 +25,7 @@ process extract {
 process vep {
   module 'ucgd'
   module 'vep/91.3'
-  cpus 24
+  cpus 16
 
   input:
     file pathway_vcf from pathway_vcf_files
@@ -36,7 +36,7 @@ process vep {
   script:
     """
     vep --format vcf --input_file $pathway_vcf --vcf --output_file ${pathway_vcf}_vep.vcf \
-        --cache --dir ~/VEP_Cache_2.0 --assembly GRCh37 --offline --fork 24 --everything --use_given_ref \
+        --cache --dir ~/VEP_Cache_2.0 --assembly GRCh37 --offline --fork 16 --everything --use_given_ref \
         --fasta /scratch/ucgd/lustre/work/u0806040/data/reference_genomes/g1k_v37_decoy.fa
     """
 }
@@ -44,7 +44,7 @@ process vep {
 // sorting
 process sort {
   module 'bcftools/1.7'
-
+  cpus 1
   input:
     file pathway_vep_vcf from pathway_vep_vcf_files
 
@@ -78,7 +78,7 @@ process gnomad {
 // generate variant count table
 process generate_counts {
   module 'htslib/1.7'
-  publishDir "$baseDir/", mode = "copy"
+  publishDir "$baseDir", mode:"copy"
   cpus 3
 
   input:
@@ -86,11 +86,27 @@ process generate_counts {
     file("/scratch/ucgd/lustre/work/u0806040/data/sfari_gene_score_dict.txt")
  
   output:
-    file("${pathway_vep_sorted_gnomad_vcf}_variant_table.txt")
-    file("${pathway_vep_sorted_gnomad_vcf}_variant_metadata.txt")
+    file("${pathway_vep_sorted_gnomad_vcf.baseName}_variant_table.txt") into variant_tables
+    file("${pathway_vep_sorted_gnomad_vcf.baseName}_variant_metadata.txt")
  
   script:
   """
-  /scratch/ucgd/lustre/work/u0806040/data/sfari_genes/split_by_pathway/neural/variant_table $pathway_vep_sorted_gnomad_vcf
+  /scratch/ucgd/lustre/work/u0806040/sfari_genes/split_by_pathway/neural/variant_table $pathway_vep_sorted_gnomad_vcf
  """
+}
+
+// remove duplicates
+process dedup {
+  publishDir "$baseDir", mode:"copy"
+
+  input:
+    file variant_table from variant_tables
+
+  output:
+    file("${variant_table.baseName}_dedup.txt")
+
+  script:
+  """
+  sort ${variant_table} -u | sort -k1,1V -k 2,2n > ${variant_table.baseName}_dedup.txt
+  """
 }
