@@ -27,7 +27,7 @@ process vep {
   module 'ucgd'
   module 'vep/91.3'
   cpus 16
-  memory 128.GB
+  memory 120.GB
   tag "${pathway_vcf}_vep.vcf"
   
   input:
@@ -66,6 +66,8 @@ process sort {
 process gnomad {
   module 'vcfanno/0.2.4'
   cpus 2
+  memory { 12.GB * task.attempt }
+  errorStrategy { task.attempt == 1 ? 'retry' : 'finish' }
   tag "${pathway_vep_sorted_vcf}_gnomad.vcf"
 
   input:
