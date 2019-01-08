@@ -1,4 +1,4 @@
-#!/USr/bin/env nexflow
+#!/usr/bin/env nexflow
 
 // Using bed files for each KEGG pathway do all downstream work
 
