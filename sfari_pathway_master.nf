@@ -138,7 +138,7 @@ process generate_bins {
 
   script:
   """
-  python /scratch/ucgd/lustre/work/u0806040/GitHub/py_tools/bin_by_mutatioin_load.py -v ${dedup_table} -o ${dedup_table.baseName}_bins.txt 
+  python /scratch/ucgd/lustre/work/u0806040/GitHub/py_tools/bins_by_mutation_load.py -v ${dedup_table} -o ${dedup_table.baseName}_bins.txt 
   """
 }
 
