@@ -69,6 +69,7 @@ process gnomad {
   memory { 12.GB * task.attempt }
   errorStrategy { task.attempt == 1 ? 'retry' : 'finish' }
   tag "${pathway_vep_sorted_vcf.baseName}_gnomad.vcf"
+  publishDir "$baseDir/raw_vcf_files", mode:"copy"
 
   input:
     file pathway_vep_sorted_vcf from pathway_vep_sorted_vcf_files
@@ -86,7 +87,7 @@ process gnomad {
 // generate variant count table
 process generate_counts {
   module 'htslib/1.7'
-  publishDir "$baseDir", mode:"copy"
+  publishDir "$baseDir/variant_counts_files", mode:"copy"
   cpus 3
   memory 40.GB
   tag "${pathway_vep_sorted_gnomad_vcf.baseName}_variant_table.txt"
@@ -106,7 +107,7 @@ process generate_counts {
 
 // remove duplicates
 process dedup {
-  publishDir "$baseDir", mode:"copy"
+  publishDir "$baseDir/variant_counts_files", mode:"copy"
   tag "${variant_table.baseName}_dedup.txt"
   input:
     file variant_table from variant_tables
@@ -122,7 +123,7 @@ process dedup {
 
 // calculate the bins based on quartiles of variant counts, after applying filters
 process generate_bins {
-  publishDir "$baseDir", mode:"copy"
+  publishDir "$baseDir/clinco_input", mode:"copy"
   tag "${dedup_table.baseName}_bins"
   cpus 2
   memory { 16.GB * task.attempt }
@@ -142,7 +143,7 @@ process generate_bins {
 
 // run clinco to test for associations
 process clinco {
-  publishDir "$baseDir", mode:"copy"
+  publishDir "$baseDir/clinco_results", mode:"copy"
   tag "${clinco.baseName}_clinco"
   cpus 4
   memory { 12.GB * task.attempt }
