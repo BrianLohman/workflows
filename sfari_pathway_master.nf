@@ -90,7 +90,7 @@ process generate_counts {
   module 'htslib/1.7'
   publishDir "$baseDir/variant_counts_files", mode:"copy"
   cpus 3
-  MEMory 40.GB
+  memory 40.GB
   tag "${pathway_vep_sorted_gnomad_vcf.baseName}_variant_table.txt"
 
   input:
