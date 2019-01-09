@@ -106,46 +106,31 @@ process generate_counts {
  """
 }
 
-// remove duplicates
-process dedup {
-  publishDir "$baseDir/variant_counts_files", mode:"copy"
-  tag "${variant_table.baseName}_dedup.txt"
-  input:
-    file variant_table from variant_tables
-
-  output:
-    file("${variant_table.baseName}_dedup.txt") into dedup
-
-  script:
-  """
-  sort ${variant_table} -u | sort -k1,1V -k 2,2n > ${variant_table.baseName}_dedup.txt
-  """
-}
-
 // calculate the bins based on quartiles of variant counts, after applying filters
 process generate_bins {
   publishDir "$baseDir/clinco_input", mode:"copy"
-  tag "${dedup_table.baseName}_bins"
+  tag "${variant_table.baseName}_bins"
   cpus 2
   memory { 16.GB * task.attempt }
   errorStrategy { task.attempt == 1 ? 'retry' : 'finish' }
 
   input:
-    file dedup_table from dedup
+    file variant_table from variant_tables
 
   output:
-    file("${dedup_table.baseName}_bins.txt") into bins
+    file("${variant_table.baseName}_bins.txt") into bins
+    file("dedup_$variant_table") 
 
   script:
   """
-  python /scratch/ucgd/lustre/work/u0806040/GitHub/py_tools/bins_by_mutation_load.py -v ${dedup_table} -o ${dedup_table.baseName}_bins.txt 
+  python /scratch/ucgd/lustre/work/u0806040/GitHub/py_tools/bins_by_mutation_load.py -v ${variant_table} -o ${variant_table.baseName}_bins.txt 
   """
 }
 
 // run clinco to test for associations
 process clinco {
   publishDir "$baseDir/clinco_results", mode:"copy"
-  tag "${clinco.baseName}_clinco"
+  tag "${bins_table.baseName}_clinco"
   cpus 4
   memory { 12.GB * task.attempt }
   errorStrategy { task.attempt == 1 ? 'retry' : 'finish' }
@@ -154,10 +139,10 @@ process clinco {
     file bins_table from bins
 
   output:
-    file("${bins.baseName}_clinco_results.txt")
+    file("${bins_table.baseName}_clinco_results.txt")
 
   script:
   """
-  python /scratch/ucgd/lustre/work/u0806040/clinco/clinical-components/clinco/clincorr.py ${bins} --column group > ${bins.baseName}_clinco_results.txt
+  python /scratch/ucgd/lustre/work/u0806040/clinco/clinical-components/clinco/clincorr.py ${bins_table} --column group > ${bins_table.baseName}_clinco_results.txt
   """
 } 
