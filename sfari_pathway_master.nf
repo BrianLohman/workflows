@@ -66,7 +66,7 @@ process sort {
 // gnomAD annotation with vcfanno
 process gnomad {
   module 'vcfanno/0.2.4'
-  cpus 2
+  cpus 8
   memory { 12.GB * task.attempt }
   errorStrategy { task.attempt == 1 ? 'retry' : 'finish' }
   tag "${pathway_vep_sorted_vcf.baseName}_gnomad.vcf"
@@ -81,7 +81,7 @@ process gnomad {
  
   script:
     """
-    vcfanno /scratch/ucgd/lustre/work/u0806040/data/gnomAD_hg37.conf $pathway_vep_sorted_vcf > ${pathway_vep_sorted_vcf.baseName}_gnomad.vcf
+    vcfanno /scratch/ucgd/lustre/work/u0806040/data/gnomAD_hg37.conf $pathway_vep_sorted_vcf -p 8 > ${pathway_vep_sorted_vcf.baseName}_gnomad.vcf
     """
 }
  
