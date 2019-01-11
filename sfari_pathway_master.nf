@@ -1,4 +1,4 @@
-#!/usr/bin/env nexflow
+#!/usr/bin/env nextflow
 
 // Using bed files for each KEGG pathway do all downstream work
 
@@ -120,7 +120,7 @@ process generate_bins {
 
   output:
     file("${variant_table.baseName}_bins.txt") into bins
-    file("dedup_$variant_table") 
+    file("dedup_$variant_table") into dedup_variant_tables 
 
   script:
   """
@@ -146,4 +146,24 @@ process clinco {
   """
   python /scratch/ucgd/lustre/work/u0806040/clinco/clinical-components/clinco/clincorr.py ${bins_table} --column group > ${bins_table.baseName}_clinco_results.txt
   """
-} 
+}
+
+// make table of individuals and variant impact and plot
+process plotting {
+  publishDir "$baseDir/plots", mode:"copy"
+  tag "${dedup_table}_plotting"
+  memory { 30.GB * task.attempt }
+  errorStrategy { task.attempt == 1 ? 'retry' : 'finish' }
+
+  input:
+    file dedup_table from dedup_variant_tables
+
+  output:
+    file("individuals_by_impact_${dedup_table}")
+    file("${dedup_table}_variant_plot.html")
+
+  script:
+  """
+  python /scratch/ucgd/lustre/work/u0806040/GitHub/py_tools/impact_table_summary.py ${dedup_table}
+  """
+}
