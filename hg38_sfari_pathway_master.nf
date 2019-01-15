@@ -48,7 +48,7 @@ process vep {
 process sort {
   module 'bcftools/1.7'
   cpus 1
-  memory { 12.GB * task.attempt }
+  memory { 30.GB * task.attempt }
   errorStrategy { task.attempt == 1 ? 'retry' : 'finish' }
   tag "${pathway_vep_vcf.baseName}_sorted.vcf"
   input:
@@ -81,7 +81,7 @@ process gnomad {
  
   script:
     """
-    vcfanno -p 6 /scratch/ucgd/lustre/work/u0806040/data/gnomAD_hg378.conf $pathway_vep_sorted_vcf > ${pathway_vep_sorted_vcf.baseName}_gnomad.vcf
+    vcfanno -p 6 /scratch/ucgd/lustre/work/u0806040/data/gnomAD_hg38.conf $pathway_vep_sorted_vcf > ${pathway_vep_sorted_vcf.baseName}_gnomad.vcf
     """
 }
  
