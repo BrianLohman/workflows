@@ -59,7 +59,7 @@ process sort {
 
   script:
     """
-    bcftools sort $pathway_vep_vcf -m 10G -T $TMPDIR -o ${pathway_vep_vcf.baseName}_sorted.vcf -O v
+    bcftools sort $pathway_vep_vcf -m 10G -o ${pathway_vep_vcf.baseName}_sorted.vcf -O v
     """
 }
 
