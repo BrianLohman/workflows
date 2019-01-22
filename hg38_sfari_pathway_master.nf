@@ -47,8 +47,8 @@ process vep {
 // sorting
 process sort {
   module 'bcftools/1.7'
-  cpus 1
-  memory { 30.GB * task.attempt }
+  cpus 2
+  memory { 120.GB * task.attempt }
   errorStrategy { task.attempt == 1 ? 'retry' : 'finish' }
   tag "${pathway_vep_vcf.baseName}_sorted.vcf"
   input:
