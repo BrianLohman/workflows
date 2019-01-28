@@ -7,6 +7,7 @@ Channel.fromPath('*.bed').set{ bed_files }
 
 // extract from original bcf
 process extract {
+  cache 'lenient'
   module 'bcftools/1.7'
   cpus 1
   tag "$bed"
@@ -24,6 +25,7 @@ process extract {
 
 // VEP annotation
 process vep {
+  cache 'lenient'
   module 'ucgd'
   module 'vep/91.3'
   cpus 16
@@ -48,7 +50,7 @@ process vep {
 process sort {
   module 'bcftools/1.7'
   cpus 2
-  memory { 120.GB }
+  memory { 40.GB * task.attempt }
   errorStrategy { task.attempt == 1 ? 'retry' : 'finish' }
   tag "${pathway_vep_vcf.baseName}_sorted.vcf"
   input:
@@ -91,7 +93,7 @@ process generate_counts {
   module 'htslib/1.7'
   publishDir "$baseDir/variant_counts_files", mode:"copy"
   cpus 3
-  memory 40.GB
+  memory 120.GB
   tag "${pathway_vep_sorted_gnomad_vcf.baseName}_variant_table.txt"
 
   input:
@@ -113,7 +115,7 @@ process generate_bins {
   publishDir "$baseDir/clinco_input", mode:"copy"
   tag "${variant_table.baseName}_bins"
   cpus 2
-  memory { 16.GB * task.attempt }
+  memory 120.GB
   errorStrategy { task.attempt == 1 ? 'retry' : 'finish' }
 
   input:
