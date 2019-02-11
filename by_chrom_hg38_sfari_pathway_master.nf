@@ -55,7 +55,7 @@ process vep {
 
   script:
     """
-    vep --format vcf --input_file $pathway_vcf --vcf --output_file ${pathway_vcf.baseName}_vep.vcf \
+    vep --format vcf --input_file $chrom_vcf --vcf --output_file ${chrom_vcf.baseName}_vep.vcf \
         --cache --dir ~/VEP_Cache_2.0 --assembly GRCh38 --offline --fork 16 --everything --use_given_ref \
         --fasta /scratch/ucgd/lustre/work/u0806040/data/reference_genomes/hg38.fa
     """
@@ -66,8 +66,8 @@ process gnomad {
   module 'vcfanno/0.2.4'
   cpus 6
   memory { 30.GB * task.attempt }
-  errorStrategy { task.attempt == 1 ? 'retry' : 'finish' }
-  tag "${pathway_vep_vcf.baseName}_gnomad.vcf"
+  ERrorStrategy { task.attempt == 1 ? 'retry' : 'finish' }
+  tag "${chrom_vep_vcf.baseName}_gnomad.vcf"
   publishDir "$baseDir/raw_vcf_files", mode:"copy"
 
   input:
@@ -99,7 +99,6 @@ process combine_chroms {
     """
 }
 
-/*
 // generate variant count table
 process generate_counts {
   module 'htslib/1.7'
@@ -110,7 +109,7 @@ process generate_counts {
   tag "${pathway_vep_sorted_gnomad_vcf.baseName}_variant_table.txt"
 
   input:
-    file pathway_vep_sorted_gnomad_vcf from pathway_vep_sorted_gnomad_vcf_files 
+    file pathway_vep_sorted_gnomad_vcf from combined_vcf_files 
     file("/scratch/ucgd/lustre/work/u0806040/data/sfari_gene_score_dict.txt")
  
   output:
@@ -183,4 +182,3 @@ process plotting {
   python /scratch/ucgd/lustre/work/u0806040/GitHub/py_tools/impact_table_summary.py ${dedup_table}
   """
 }
-*/
